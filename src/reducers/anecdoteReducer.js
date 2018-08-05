@@ -1,3 +1,25 @@
+import { showNotificationAction } from './notificationReducer'
+
+export const createAction = (content) => {
+  return (dispatch) => {
+    dispatch({
+      type: 'CREATE',
+      content,    
+    })
+    dispatch(showNotificationAction(`You added ${content}`))
+  }
+}
+
+export const voteAction = (anecdote) => {
+  return (dispatch) => {
+    dispatch({
+      type: 'VOTE',
+      id: anecdote.id,    
+    })
+    dispatch(showNotificationAction(`You voted ${anecdote.content}`))
+  }
+}
+
 const anecdotesAtStart = [
   'If it hurts, do it more often',
   'Adding manpower to a late software project makes it later!',
@@ -17,21 +39,21 @@ const asObject = (anecdote) => {
   }
 }
 
-const initialState = anecdotesAtStart.map(asObject)
+const initialState = { anecdotes: anecdotesAtStart.map(asObject) }
 
-const reducer = (store = initialState, action) => {
+const reducer = (state = initialState, action) => {
   if (action.type==='VOTE') {
-    const old = store.filter(a => a.id !==action.id)
-    const voted = store.find(a => a.id === action.id)
+    const old = state.anecdotes.filter(a => a.id !==action.id)
+    const voted = state.anecdotes.find(a => a.id === action.id)
 
-    return [...old, { ...voted, votes: voted.votes+1} ]
+    return { anecdotes: [...old, { ...voted, votes: voted.votes+1} ] }
   }
   if (action.type === 'CREATE') {
 
-    return [...store, { content: action.content, id: getId(), votes:0 }]
+    return { anecdotes: [...state.anecdotes, { content: action.content, id: getId(), votes:0 }] }
   }
 
-  return store
+  return state
 }
 
 export default reducer
