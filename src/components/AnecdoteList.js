@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { voteAction } from '../reducers/anecdoteReducer'
+import { voteAction, loadAnecdotesAction } from '../reducers/anecdoteReducer'
 
 export const anecdotesPropType = 
   PropTypes.arrayOf(PropTypes.shape({
@@ -12,19 +12,20 @@ export const anecdotesPropType =
 
 class AnecdoteList extends React.Component {
   static propTypes = {
-    anecdotes: anecdotesPropType,
+    anecdotesToShow: anecdotesPropType,
     voteAction: PropTypes.func.isRequired,
-    filter: PropTypes.string,
+    loadAnecdotesAction: PropTypes.func.isRequired,
+  }
+
+  componentDidMount() {
+    this.props.loadAnecdotesAction()
   }
 
   render() {
-    const anecdotes = !this.props.filter
-      ? this.props.anecdotes
-      : this.props.anecdotes.filter(anecdote => anecdote.content.includes(this.props.filter))
     return (
       <div>
         <h2>Anecdotes</h2>
-        {anecdotes.sort((a, b) => b.votes - a.votes).map(anecdote =>
+        {this.props.anecdotesToShow.sort((a, b) => b.votes - a.votes).map(anecdote =>
           <div key={anecdote.id}>
             <div>
               {anecdote.content}
@@ -45,12 +46,14 @@ class AnecdoteList extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  anecdotes: state.anecdotes.anecdotes,
-  filter: state.filter.filter,
+  anecdotesToShow: state.filter.filter
+    ? state.anecdotes.anecdotes.filter(anecdote => anecdote.content.includes(state.filter.filter))
+    : state.anecdotes.anecdotes
 })
 
 const mapDispatchToProps = {
   voteAction,
+  loadAnecdotesAction,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AnecdoteList)

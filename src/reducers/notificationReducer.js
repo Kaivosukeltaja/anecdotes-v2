@@ -4,7 +4,7 @@ export const hideNotificationAction = () => ({
   type: 'HIDE_NOTIFICATION',
 })
 
-export const showNotificationAction = text => {
+export const showNotificationAction = (text, seconds = 5) => {
   return (dispatch) => {
     dispatch({
       type: 'SHOW_NOTIFICATION',
@@ -12,7 +12,7 @@ export const showNotificationAction = text => {
     })
     setTimeout(() => {
       dispatch(hideNotificationAction())
-    }, 5000)
+    }, seconds * 1000)
   }
 }
 

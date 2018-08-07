@@ -1,45 +1,43 @@
 import { showNotificationAction } from './notificationReducer'
+import anecdoteService from '../services/anecdoteService'
+
+const getId = () => (100000*Math.random()).toFixed(0)
+
+export const loadAnecdotesAction = () => {
+  return async (dispatch) => {
+    const anecdotes = await anecdoteService.getAll()
+    dispatch({
+      type: 'ANECDOTES_LOADED',
+      anecdotes,
+    })
+  }
+}
 
 export const createAction = (content) => {
-  return (dispatch) => {
+  return async (dispatch) => {
+    const anecdote = { content, id: getId(), votes:0 }
+    await anecdoteService.create(anecdote)
     dispatch({
       type: 'CREATE',
-      content,    
+      anecdote,    
     })
     dispatch(showNotificationAction(`You added ${content}`))
   }
 }
 
 export const voteAction = (anecdote) => {
-  return (dispatch) => {
+  return async (dispatch) => {
+    const updatedAnecdote = { ...anecdote, votes: anecdote.votes + 1 }
+    await anecdoteService.update(updatedAnecdote)
     dispatch({
       type: 'VOTE',
       id: anecdote.id,    
     })
-    dispatch(showNotificationAction(`You voted ${anecdote.content}`))
+    dispatch(showNotificationAction(`You voted ${anecdote.content}`, 3))
   }
 }
 
-const anecdotesAtStart = [
-  'If it hurts, do it more often',
-  'Adding manpower to a late software project makes it later!',
-  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-  'Premature optimization is the root of all evil.',
-  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
-
-const getId = () => (100000*Math.random()).toFixed(0)
-
-const asObject = (anecdote) => {
-  return {
-    content: anecdote,
-    id: getId(),
-    votes: 0
-  }
-}
-
-const initialState = { anecdotes: anecdotesAtStart.map(asObject) }
+const initialState = { anecdotes: [] }
 
 const reducer = (state = initialState, action) => {
   if (action.type==='VOTE') {
@@ -50,7 +48,10 @@ const reducer = (state = initialState, action) => {
   }
   if (action.type === 'CREATE') {
 
-    return { anecdotes: [...state.anecdotes, { content: action.content, id: getId(), votes:0 }] }
+    return { anecdotes: [...state.anecdotes, action.anecdote] }
+  }
+  if (action.type === 'ANECDOTES_LOADED') {
+    return { anecdotes: action.anecdotes }
   }
 
   return state
